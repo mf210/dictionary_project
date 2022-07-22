@@ -26,5 +26,13 @@ services:
     ports:
       - 27017:27017
     restart: always
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx_dockerfile
+    ports:
+      - 1338:80
+    depends_on:
+      - fastapi
 volumes:
   mongodb_data:

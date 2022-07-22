@@ -7,7 +7,7 @@ from .xfdictionary import get_data
 
 
 
-app = FastAPI()
+app = FastAPI(docs_url="/xfdictionary/docs")
 
 @app.on_event("startup")
 def startup_db_client():
@@ -20,7 +20,7 @@ def startup_db_client():
 def shutdown_db_client():
     app.mongodb_client.close()
 
-@app.get('/')
+@app.get('/xfdictionary')
 async def get_phrase_definitions(phrase: str = Query(max_length=60)):
     # check if the phrase already exists in the database
     result = app.dict_collection.find_one({'phrase': phrase})
