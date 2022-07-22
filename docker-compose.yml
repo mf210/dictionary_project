@@ -3,11 +3,11 @@ version: "3.9"
 services:
   fastapi:
     build: .
-    command: uvicorn app.main:app --host 0.0.0.0
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8022
     volumes:
       - .:/dictionary_project
     ports:
-      - 8000:8000
+      - 8022:8022
     environment:
       - X_RAPIDAPI_HOST=${X_RAPIDAPI_HOST}
       - X_RAPIDAPI_KEY=${X_RAPIDAPI_KEY}
