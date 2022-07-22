@@ -14,38 +14,38 @@ headers = {
 	"X-RapidAPI-Host":  os.environ['X_RAPIDAPI_HOST']
 }
 
-def get_data(phrase: str):
-	# create payload based on phrase
+def get_data(word: str):
+	# create payload based on word
 	payload = {} 	
-	splited_phrase = phrase.split()
-	if len(splited_phrase) > 1:
-		payload['selection'] = splited_phrase[0]
-		payload['textAfterSelection'] = ' '.join(splited_phrase[1:])
+	splited_word = word.split()
+	if len(splited_word) > 1:
+		payload['selection'] = splited_word[0]
+		payload['textAfterSelection'] = ' '.join(splited_word[1:])
 	else:
-		payload['selection'] = phrase
+		payload['selection'] = word
 	# get data from api
 	data = requests.request("POST", url, json=payload,
 							headers=headers, params=querystring).json()
 	# sort data
 	result = {
-		'phrase': phrase,
+		'word': word,
 		'definitions': [],
 		'examples': [],
 		'antonyms': [],
-		'synonyms': [],
-		'Other Forms': set()
+		'meanings': [],
+		'forms': set()
 	}
 	for item in data.get('items', []):
 		result['antonyms'].extend(item.get('antonyms', []))
-		result['synonyms'].extend(item.get('synonyms', []))
+		result['meanings'].extend(item.get('synonyms', []))
 		for definition_obj in item.get('definitions', []):
 			result['definitions'].append(definition_obj['definition'])
 			result['examples'].extend(definition_obj.get('examples', []))
-		# extrac the other forms of phrase 
+		# extrac the other forms of word 
 		for inflectional_form in item.get('inflectionalForms', []):
 			other_form = inflectional_form['forms'][0]
 			if other_form:
-				result['Other Forms'].add(other_form)
+				result['forms'].add(other_form)
 
-	result['Other Forms'] = list(result['Other Forms'])
+	result['forms'] = list(result['forms'])
 	return result

@@ -7,7 +7,7 @@ from .xfdictionary import get_data
 
 
 
-app = FastAPI(docs_url="/xfdictionary/docs")
+app = FastAPI(docs_url="/translations/docs")
 
 @app.on_event("startup")
 def startup_db_client():
@@ -20,10 +20,10 @@ def startup_db_client():
 def shutdown_db_client():
     app.mongodb_client.close()
 
-@app.get('/xfdictionary')
-async def get_phrase_definitions(phrase: str = Query(max_length=60)):
-    # check if the phrase already exists in the database
-    result = app.dict_collection.find_one({'phrase': phrase})
+@app.get('/translations')
+async def get_word_definitions(word: str = Query(max_length=60)):
+    # check if the word already exists in the database
+    result = app.dict_collection.find_one({'word': word})
     if not result:
         # update and check the today's request limit
         today_req_count = app.req_collection.find_one_and_update(
@@ -32,9 +32,9 @@ async def get_phrase_definitions(phrase: str = Query(max_length=60)):
             upsert=True,
             return_document=ReturnDocument.AFTER)['count']
 
-        result = get_data(phrase) if today_req_count <= 10_000 else {'msg': "Today's capacity is completed"}
+        result = get_data(word) if today_req_count <= 10_000 else {'msg': "Today's capacity is completed"}
         app.dict_collection.insert_one(result)
 
     result.pop('_id', None)
-    result.pop('phrase', None)
+    result.pop('word', None)
     return result
