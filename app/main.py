@@ -1,6 +1,7 @@
 import os
 from datetime import date
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient, ReturnDocument
 
 from .xfdictionary import get_data
@@ -8,6 +9,22 @@ from .xfdictionary import get_data
 
 
 app = FastAPI(docs_url="/translations/docs")
+
+origins = [
+    "https://www.youtube.com",
+    "http://localhost:8000",
+    "http://localhost:8022",
+    "http://127.0.0.1:8022", # to ensure
+
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup_db_client():
