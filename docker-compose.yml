@@ -13,6 +13,11 @@ services:
       - X_RAPIDAPI_KEY=${X_RAPIDAPI_KEY}
       - MONGO_USER=${MONGO_USER}
       - MONGO_PWD=${MONGO_PWD}
+    logging:
+        driver: "json-file"
+        options:
+            max-file: 5
+            max-size: 10m
     restart: always
     depends_on:
       - mongo
@@ -25,6 +30,11 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PWD}
     ports:
       - 27017:27017
+    logging:
+        driver: "json-file"
+        options:
+            max-file: 5
+            max-size: 10m
     restart: always
   # nginx:
   #   build:
