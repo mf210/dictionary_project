@@ -72,4 +72,4 @@ def get_data(word: str):
 	return result
 
 if __name__ == '__main__':
-	print(get_data('wordddddd'))
+	print(get_data('word'))
