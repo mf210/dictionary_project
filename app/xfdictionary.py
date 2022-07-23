@@ -32,12 +32,12 @@ def get_data(word: str):
 		'definitions': [],
 		'examples': [],
 		'antonyms': [],
-		'meanings': [],
+		'synonyms': [],
 		'forms': set()
 	}
 	for item in data.get('items', []):
 		result['antonyms'].extend(item.get('antonyms', []))
-		result['meanings'].extend(item.get('synonyms', []))
+		result['synonyms'].extend(item.get('synonyms', []))
 		for definition_obj in item.get('definitions', []):
 			result['definitions'].append(definition_obj['definition'])
 			result['examples'].extend(definition_obj.get('examples', []))
