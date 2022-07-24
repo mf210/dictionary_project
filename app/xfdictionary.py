@@ -1,33 +1,66 @@
 import os
 import requests
 
+
 url = f"https://{os.environ['X_RAPIDAPI_HOST']}/v1/dictionary"
 headers = {
 	"content-type": "application/json",
 	"X-RapidAPI-Key": os.environ['X_RAPIDAPI_KEY'],
 	"X-RapidAPI-Host":  os.environ['X_RAPIDAPI_HOST']
 }
-USA_PRONUNCIATION_SIGNS = ["(General American)", "<i>noun</i>", "<i>verb</i>"]
+USA_PRONUNC_SIGNS = ["(General American)", "<i>noun</i>", "<i>verb</i>" , "(US)"]
 
 
-def is_us_pronunc(pronunc: str):
-	if any(x in pronunc for x in USA_PRONUNCIATION_SIGNS) or ('(' not in pronunc):
-		return True
+def get_us_pronunciation(data: dict, word: str):
+	for pronunciation in data.get('pronunciations', []):
+		for entry in pronunciation.get('entries', []):
+			if entry['entry'] == word:
+				for textual in entry.get('textual', []):
+					us_pron = textual['pronunciation']
+					if any(x in us_pron for x in USA_PRONUNC_SIGNS) or ('(' not in us_pron):
+						return us_pron
 
-def gen_dict_extract(key, var):
-    if hasattr(var,'items'):
-        for k, v in var.items():
-            if k == key:
-                yield v
-            if isinstance(v, dict):
-                for result in gen_dict_extract(key, v):
-                    if is_us_pronunc(result):
-                        yield result
-            elif isinstance(v, list):
-                for d in v:
-                    for result in gen_dict_extract(key, d):
-                        if is_us_pronunc(result):
-                            yield result
+def get_word_frequencies(data: dict, word: str):
+	res = {}
+	for word_frequency in data.get('wordFrequencies', []):
+		if word_frequency['word'] == word:
+			for frequency in word_frequency.get('frequencies', []):
+				res[frequency['partOfSpeech']] = frequency['frequencyBand']
+	return res
+
+def split_list_strings(items: list[str]):
+	res = []
+	for item in items:
+		res.extend(item.split(','))
+	return res
+
+def sort_data(data: dict, word: str):
+	result = {}
+	word_frequencies = get_word_frequencies(data, word)
+	us_pronunciation = get_us_pronunciation(data, word)
+
+	for item in data.get('items', []):
+		part_of_speech = item.get('partOfSpeech')
+		item_data = {
+			'word': word,
+			'wordFamily': [],
+			'antonyms': split_list_strings(item.get('antonyms', [])),
+			'synonyms': split_list_strings(item.get('synonyms', [])),
+			'definitions': item.get('definitions', [])
+		}
+		
+		item_data['pronunciation'] = us_pronunciation
+		item_data['frequency'] = word_frequencies.get(part_of_speech)
+
+		for inflectional_form in item.get('inflectionalForms', []):
+			other_form = inflectional_form['forms'][0]
+			if other_form:
+				item_data['wordFamily'].append(other_form)
+
+		result[part_of_speech] = item_data
+		
+	result['word'] = word
+	return result
 
 def get_data(word: str):
 	# create payload based on word
@@ -38,38 +71,11 @@ def get_data(word: str):
 		payload['textAfterSelection'] = ' '.join(splited_word[1:])
 	else:
 		payload['selection'] = word
-	# get data from api
+	# get response from api
 	data = requests.request("POST", url, json=payload, headers=headers).json()
-	# sort data
-	result = {
-		'word': word,
-		'definitions': [],
-		'wordFrequencies': data.get('wordFrequencies', []),
-		'pronunciations': list(
-			gen_dict_extract('pronunciation', data.get('pronunciations',[{}])[0])
-		)
-	}
-	for item in data.get('items', []):
-		current_definition = {
-			'partOfSpeech': [item.get('partOfSpeech', None)],
-			'antonyms': item.get('antonyms', []),
-			'synonyms': item.get('synonyms', []),
-			'definitions': [],
-			'examples': [],
-			'forms': []
-		}
-		# extract definitions and examples of word
-		for definition_obj in item.get('definitions', []):
-			current_definition['definitions'].append(definition_obj['definition'])
-			current_definition['examples'].extend(definition_obj.get('examples', []))
-		# extract other forms of word
-		for inflectional_form in item.get('inflectionalForms', []):
-			other_form = inflectional_form['forms'][0]
-			if other_form:
-				current_definition['forms'].append(other_form)
+	return sort_data(data, word)
 
-		result['definitions'].append(current_definition)
-	return result
 
 if __name__ == '__main__':
-	print(get_data('word'))
+	from pprint import pprint
+	pprint(get_data('good'))

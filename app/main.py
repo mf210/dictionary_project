@@ -7,16 +7,7 @@ from pymongo import MongoClient, ReturnDocument
 from .xfdictionary import get_data
 
 
-
 app = FastAPI(docs_url="/translations/docs")
-
-# origins = [
-#     "https://www.youtube.com",
-#     "http://localhost:8000", # for development purposes
-#     "http://localhost:8022",
-#     "http://127.0.0.1:8022", # to ensure
-# ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
