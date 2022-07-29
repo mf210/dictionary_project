@@ -8,7 +8,7 @@ headers = {
 	"X-RapidAPI-Key": os.environ['X_RAPIDAPI_KEY'],
 	"X-RapidAPI-Host":  os.environ['X_RAPIDAPI_HOST']
 }
-USA_PRONUNC_SIGNS = ["(General American)", "<i>noun</i>", "<i>verb</i>" , "(US)"]
+USA_PRONUNC_SIGNS = ["(General American)", "<i>" , "(US)"]
 
 
 def get_us_pronunciation(data: dict, word: str):
@@ -17,7 +17,7 @@ def get_us_pronunciation(data: dict, word: str):
 			if entry['entry'] == word:
 				for textual in entry.get('textual', []):
 					us_pron = textual['pronunciation']
-					if any(x in us_pron for x in USA_PRONUNC_SIGNS) or ('(' not in us_pron):
+					if any(x in us_pron for x in USA_PRONUNC_SIGNS):
 						return us_pron
 
 def get_word_frequencies(data: dict, word: str):
@@ -41,6 +41,8 @@ def sort_data(data: dict, word: str):
 
 	for item in data.get('items', []):
 		part_of_speech = item.get('partOfSpeech')
+		if not part_of_speech:
+			continue
 		item_data = {
 			'word': word,
 			'wordFamily': [],

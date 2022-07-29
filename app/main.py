@@ -30,7 +30,7 @@ def shutdown_db_client():
 @app.get('/translations')
 async def get_word_definitions(word: str = Query(max_length=60)):
     # check if the word already exists in the database
-    result = app.dict_collection.find_one({'word': word})
+    result = app.dict_collection.find_one({'word': word.lower()})
     if not result:
         # update and check the today's request limit
         today_req_count = app.req_collection.find_one_and_update(
@@ -39,7 +39,7 @@ async def get_word_definitions(word: str = Query(max_length=60)):
             upsert=True,
             return_document=ReturnDocument.AFTER)['count']
 
-        result = get_data(word) if today_req_count <= 10_000 else {'msg': "Today's capacity is completed"}
+        result = get_data(word.lower()) if today_req_count <= 10_000 else {'msg': "Today's capacity is completed"}
         app.dict_collection.insert_one(result)
 
     result.pop('_id', None)
