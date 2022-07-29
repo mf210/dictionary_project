@@ -14,18 +14,18 @@ USA_PRONUNC_SIGNS = ["(General American)", "<i>" , "(US)"]
 def get_us_pronunciation(data: dict, word: str):
 	for pronunciation in data.get('pronunciations', []):
 		for entry in pronunciation.get('entries', []):
-			if entry['entry'] == word:
+			if entry.get('entry') == word:
 				for textual in entry.get('textual', []):
-					us_pron = textual['pronunciation']
-					if any(x in us_pron for x in USA_PRONUNC_SIGNS):
+					us_pron = textual.get('pronunciation')
+					if us_pron and any(x in us_pron for x in USA_PRONUNC_SIGNS):
 						return us_pron
 
 def get_word_frequencies(data: dict, word: str):
 	res = {}
 	for word_frequency in data.get('wordFrequencies', []):
-		if word_frequency['word'] == word:
+		if word_frequency.get('word') == word:
 			for frequency in word_frequency.get('frequencies', []):
-				res[frequency['partOfSpeech']] = frequency['frequencyBand']
+				res[frequency.get('partOfSpeech')] = frequency.get('frequencyBand')
 	return res
 
 def split_list_strings(items: list[str]):
@@ -55,7 +55,7 @@ def sort_data(data: dict, word: str):
 		item_data['frequency'] = word_frequencies.get(part_of_speech)
 
 		for inflectional_form in item.get('inflectionalForms', []):
-			other_form = inflectional_form['forms'][0]
+			other_form = inflectional_form.get('forms', [None])[0]
 			if other_form:
 				item_data['wordFamily'].append(other_form)
 

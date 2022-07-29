@@ -28,7 +28,7 @@ def shutdown_db_client():
     app.mongodb_client.close()
 
 @app.get('/translations')
-async def get_word_definitions(word: str = Query(max_length=60)):
+async def get_word_definitions(word: str = Query(max_length=122)):
     # check if the word already exists in the database
     result = app.dict_collection.find_one({'word': word.lower()})
     if not result:
